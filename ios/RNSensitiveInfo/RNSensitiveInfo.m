@@ -117,6 +117,11 @@ RCT_EXPORT_METHOD(setItem:(NSString*)key value:(NSString*)value options:(NSDicti
         keychainService = @"app";
     }
     
+    NSString * keychainAccessGroup = [RCTConvert NSString:options[@"keychainAccessGroup"]];
+    if (keychainAccessGroup == NULL) {
+        keychainAccessGroup = @"unknown";
+    }
+    
     NSNumber *sync = options[@"kSecAttrSynchronizable"];
     if (sync == NULL)
         sync = (__bridge id)kSecAttrSynchronizableAny;
@@ -125,6 +130,7 @@ RCT_EXPORT_METHOD(setItem:(NSString*)key value:(NSString*)value options:(NSDicti
     NSMutableDictionary* search = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                       (__bridge id)(kSecClassGenericPassword), kSecClass,
                                       keychainService, kSecAttrService,
+                                      keychainAccessGroup, kSecAttrAccessGroup,
                                       sync, kSecAttrSynchronizable,
                                       key, kSecAttrAccount, nil];
     NSMutableDictionary *query = [search mutableCopy];
@@ -170,10 +176,16 @@ RCT_EXPORT_METHOD(getItem:(NSString *)key options:(NSDictionary *)options resolv
         keychainService = @"app";
     }
     
+    NSString * keychainAccessGroup = [RCTConvert NSString:options[@"keychainAccessGroup"]];
+    if (keychainAccessGroup == NULL) {
+        keychainAccessGroup = @"unknown";
+    }
+    
     // Create dictionary of search parameters
     NSMutableDictionary* query = [NSMutableDictionary dictionaryWithObjectsAndKeys:(__bridge id)(kSecClassGenericPassword), kSecClass,
                                   keychainService, kSecAttrService,
                                   key, kSecAttrAccount,
+                                  keychainAccessGroup, kSecAttrAccessGroup,
                                   kSecAttrSynchronizableAny, kSecAttrSynchronizable,
                                   kCFBooleanTrue, kSecReturnAttributes,
                                   kCFBooleanTrue, kSecReturnData,
