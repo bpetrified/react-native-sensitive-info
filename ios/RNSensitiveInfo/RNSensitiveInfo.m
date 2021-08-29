@@ -123,16 +123,18 @@ RCT_EXPORT_METHOD(setItem:(NSString*)key value:(NSString*)value options:(NSDicti
     NSNumber *sync = options[@"kSecAttrSynchronizable"];
     if (sync == NULL)
         sync = (__bridge id)kSecAttrSynchronizableAny;
-
+    
+    NSMutableDictionary* search;
+    
     NSData* valueData = [value dataUsingEncoding:NSUTF8StringEncoding];
     if (keychainAccessGroup == NULL) {
-        NSMutableDictionary* search = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+        search = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                           (__bridge id)(kSecClassGenericPassword), kSecClass,
                                           keychainService, kSecAttrService,
                                           sync, kSecAttrSynchronizable,
                                           key, kSecAttrAccount, nil];
     } else {
-        NSMutableDictionary* search = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+        search = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                           (__bridge id)(kSecClassGenericPassword), kSecClass,
                                           keychainService, kSecAttrService,
                                           keychainAccessGroup, kSecAttrAccessGroup,
@@ -182,11 +184,11 @@ RCT_EXPORT_METHOD(getItem:(NSString *)key options:(NSDictionary *)options resolv
     if (keychainService == NULL) {
         keychainService = @"app";
     }
-    
+    NSMutableDictionary* query;
     NSString * keychainAccessGroup = [RCTConvert NSString:options[@"keychainAccessGroup"]];
     if (keychainAccessGroup == NULL) {
         // Create dictionary of search parameters
-        NSMutableDictionary* query = [NSMutableDictionary dictionaryWithObjectsAndKeys:(__bridge id)(kSecClassGenericPassword), kSecClass,
+        query = [NSMutableDictionary dictionaryWithObjectsAndKeys:(__bridge id)(kSecClassGenericPassword), kSecClass,
                                       keychainService, kSecAttrService,
                                       key, kSecAttrAccount,
                                       kSecAttrSynchronizableAny, kSecAttrSynchronizable,
@@ -195,7 +197,7 @@ RCT_EXPORT_METHOD(getItem:(NSString *)key options:(NSDictionary *)options resolv
                                       nil];
     } else {
         // Create dictionary of search parameters
-        NSMutableDictionary* query = [NSMutableDictionary dictionaryWithObjectsAndKeys:(__bridge id)(kSecClassGenericPassword), kSecClass,
+        query = [NSMutableDictionary dictionaryWithObjectsAndKeys:(__bridge id)(kSecClassGenericPassword), kSecClass,
                                       keychainService, kSecAttrService,
                                       key, kSecAttrAccount,
                                       keychainAccessGroup, kSecAttrAccessGroup,
