@@ -118,21 +118,28 @@ RCT_EXPORT_METHOD(setItem:(NSString*)key value:(NSString*)value options:(NSDicti
     }
     
     NSString * keychainAccessGroup = [RCTConvert NSString:options[@"keychainAccessGroup"]];
-    if (keychainAccessGroup == NULL) {
-        keychainAccessGroup = @"unknown";
-    }
+    
     
     NSNumber *sync = options[@"kSecAttrSynchronizable"];
     if (sync == NULL)
         sync = (__bridge id)kSecAttrSynchronizableAny;
 
     NSData* valueData = [value dataUsingEncoding:NSUTF8StringEncoding];
-    NSMutableDictionary* search = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                      (__bridge id)(kSecClassGenericPassword), kSecClass,
-                                      keychainService, kSecAttrService,
-                                      keychainAccessGroup, kSecAttrAccessGroup,
-                                      sync, kSecAttrSynchronizable,
-                                      key, kSecAttrAccount, nil];
+    if (keychainAccessGroup == NULL) {
+        NSMutableDictionary* search = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                          (__bridge id)(kSecClassGenericPassword), kSecClass,
+                                          keychainService, kSecAttrService,
+                                          sync, kSecAttrSynchronizable,
+                                          key, kSecAttrAccount, nil];
+    } else {
+        NSMutableDictionary* search = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                          (__bridge id)(kSecClassGenericPassword), kSecClass,
+                                          keychainService, kSecAttrService,
+                                          keychainAccessGroup, kSecAttrAccessGroup,
+                                          sync, kSecAttrSynchronizable,
+                                          key, kSecAttrAccount, nil];
+    }
+    
     NSMutableDictionary *query = [search mutableCopy];
     [query setValue: valueData forKey: kSecValueData];
 
@@ -178,18 +185,25 @@ RCT_EXPORT_METHOD(getItem:(NSString *)key options:(NSDictionary *)options resolv
     
     NSString * keychainAccessGroup = [RCTConvert NSString:options[@"keychainAccessGroup"]];
     if (keychainAccessGroup == NULL) {
-        keychainAccessGroup = @"unknown";
+        // Create dictionary of search parameters
+        NSMutableDictionary* query = [NSMutableDictionary dictionaryWithObjectsAndKeys:(__bridge id)(kSecClassGenericPassword), kSecClass,
+                                      keychainService, kSecAttrService,
+                                      key, kSecAttrAccount,
+                                      kSecAttrSynchronizableAny, kSecAttrSynchronizable,
+                                      kCFBooleanTrue, kSecReturnAttributes,
+                                      kCFBooleanTrue, kSecReturnData,
+                                      nil];
+    } else {
+        // Create dictionary of search parameters
+        NSMutableDictionary* query = [NSMutableDictionary dictionaryWithObjectsAndKeys:(__bridge id)(kSecClassGenericPassword), kSecClass,
+                                      keychainService, kSecAttrService,
+                                      key, kSecAttrAccount,
+                                      keychainAccessGroup, kSecAttrAccessGroup,
+                                      kSecAttrSynchronizableAny, kSecAttrSynchronizable,
+                                      kCFBooleanTrue, kSecReturnAttributes,
+                                      kCFBooleanTrue, kSecReturnData,
+                                      nil];
     }
-    
-    // Create dictionary of search parameters
-    NSMutableDictionary* query = [NSMutableDictionary dictionaryWithObjectsAndKeys:(__bridge id)(kSecClassGenericPassword), kSecClass,
-                                  keychainService, kSecAttrService,
-                                  key, kSecAttrAccount,
-                                  keychainAccessGroup, kSecAttrAccessGroup,
-                                  kSecAttrSynchronizableAny, kSecAttrSynchronizable,
-                                  kCFBooleanTrue, kSecReturnAttributes,
-                                  kCFBooleanTrue, kSecReturnData,
-                                  nil];
     
     if([RCTConvert NSString:options[@"kSecUseOperationPrompt"]] != NULL){
         [query setValue:[RCTConvert NSString:options[@"kSecUseOperationPrompt"]] forKey:(NSString *)kSecUseOperationPrompt];
